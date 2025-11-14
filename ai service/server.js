@@ -4,21 +4,21 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// ===== App setup =====
 const app = express();
 const PORT = process.env.PORT || 4002;
 
-// ===== CORS פתוח לכל המקורות (UI ברנדר, לוקאלי וכו') =====
-const corsOptions = {
-origin: '*',
-methods: ['GET', 'POST', 'OPTIONS'],
-allowedHeaders: ['Content-Type'],
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-// ===== JSON body =====
+// JSON body
 app.use(express.json());
+
+// ===== Open CORS for all origins =====
+app.use(cors());
+
+// ===== Simple logger for all requests =====
+app.use((req, res, next) => {
+console.log('[AI]', req.method, req.url, 'at', new Date().toISOString());
+next();
+});
 
 // ===== Health check =====
 function healthPayload() {
