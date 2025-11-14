@@ -607,62 +607,36 @@ toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️
 <pre id="ai-test-output" style="margin-top:16px;background:#111;padding:10px;border-radius:6px;color:#0f0;white-space:pre-wrap;"></pre>
 </div>
 <script>
-// ===== AI Tester Script =====
+<div style="max-width:600px;margin:40px auto;padding:16px;border:1px solid #444;border-radius:8px;">
+<h2 style="margin-top:0;">בדיקת סוכן ה-AI (פיתוח)</h2>
+<p>כתוב כאן משפט כאילו לקוח מדבר איתך (לדוגמה: "אני מחפש בנייה של אתר לעסק"):</p>
+
+<textarea id="ai-test-input" rows="3" style="width:100%;padding:8px;"></textarea>
+
+<button id="ai-test-button"
+style="margin-top:10px;padding:8px 16px;cursor:pointer;">
+שלח ל-AI
+</button>
+
+<pre id="ai-test-output"
+style="margin-top:16px;background:#111;padding:10px;border-radius:6px;color:#0f0;white-space:pre-wrap;"></pre>
+</div>
+
+<script>
+// === AI Lead Tester – מדבר עם המיקרו-סרוויס ב-Render ===
 const aiInput = document.getElementById('ai-test-input');
-const aiButton = document.getElementById('ai-test-button');
+const aiBtn = document.getElementById('ai-test-button');
 const aiOutput = document.getElementById('ai-test-output');
 
-if (aiButton && aiInput && aiOutput) {
-aiButton.addEventListener('click', async () => {
+if (aiBtn && aiInput && aiOutput) {
+aiBtn.addEventListener('click', async () => {
 const text = aiInput.value.trim();
 if (!text) {
-aiOutput.textContent = 'תכתוב משהו קודם 🙂';
+aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
 return;
 }
 
-aiOutput.textContent = 'שולח ל-AI service...';
-
-// לבדוק אם אנחנו לוקאלי (127.0.0.1 או localhost)
-const isLocal =
-window.location.hostname === 'localhost' ||
-window.location.hostname === '127.0.0.1';
-
-const AI_BASE_URL = isLocal
-? 'http://localhost:4002'
-: 'https://your-ai-service.onrender.com';
-
-try {
-const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ text })
-});
-
-if (!res.ok) {
-aiOutput.textContent = 'שגיאה מהשרת: ' + res.status;
-return;
-}
-
-const data = await res.json();
-aiOutput.textContent = JSON.stringify(data, null, 2);
-} catch (err) {
-aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
-}
-});
-} else {
-console.warn('AI tester elements not found');
-}
-</script>
-
-<script>
-// בדיקת חיבור ל-ai-service
-const aiBtn = document.getElementById('ai-test-button');
-const aiInput = document.getElementById('ai-test-input');
-const aiOutput = document.getElementById('ai-test-output');
-
-<script>
-aiBtn.addEventListener('click', async () => {
-aiOutput.textContent = '...AI-service נבדק';
+aiOutput.textContent = '🔍 בודק את AI-service...';
 
 try {
 const isLocal =
@@ -672,12 +646,6 @@ window.location.hostname === '127.0.0.1';
 const AI_BASE_URL = isLocal
 ? 'http://localhost:4002'
 : 'https://autoroy-chat-ai-main.onrender.com';
-
-const text = aiInput.value.trim();
-if (!text) {
-aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
-return;
-}
 
 const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
 method: 'POST',
@@ -696,25 +664,8 @@ aiOutput.textContent = JSON.stringify(data, null, 2);
 aiOutput.textContent = 'שגיאה ב־fetch: ' + err.message;
 }
 });
-</script>
-
-if (!res.ok) {
-aiOutput.textContent = 'שגיאה בשרת: ' + res.status;
-return;
-}
-
-const data = await res.json();
-aiOutput.textContent = JSON.stringify(data, null, 2);
-} catch (err) {
-aiOutput.textContent = 'שגיאה: ' + err.message;
-}
-
-const data = await res.json();
-aiOutput.textContent = JSON.stringify(data, null, 2);
-} catch (err) {
-aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
-}
-});
+} else {
+console.warn('AI tester elements not found');
 }
 </script>
 </body>
