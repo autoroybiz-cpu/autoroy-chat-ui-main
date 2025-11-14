@@ -417,7 +417,7 @@ AUTOROY CLOUD
 <span>SCALABLE CHAT CONSOLE</span>
 </header>
 
-<!-- מסך התחברות בלבד בעמוד הראשון -->
+<!-- מסך התחברות -->
 <div id="login" class="screen active">
 <div class="hero">
 <div class="hero-kicker">AUTO-POWERED DEVOPS</div>
@@ -526,7 +526,7 @@ return;
 usernameSelectScreen.classList.remove('active');
 chatScreen.classList.add('active');
 userNameSpan.textContent = displayName;
-socket = io('https://autoroy-chat-service.onrender.com', { auth: { token: 'dummy-token-123' } });
+socket = io('https://autoroy-chat-main.onrender.com', { auth: { token: 'dummy-token-123' } });
 socket.on('connect', () => addMessage(displayName + ' הצטרף לצ\'אט!'));
 socket.on('message', (msg) => addMessage(msg));
 socket.on('connect_error', (err) => alert('שגיאת חיבור: ' + err.message));
@@ -543,7 +543,6 @@ addMessageWithImage(fullMessage, message);
 } else {
 const fullMessage = displayName + ': ' + message;
 socket.emit('message', fullMessage);
-// מחכה לתשובה מהשרת
 }
 input.value = '';
 }
