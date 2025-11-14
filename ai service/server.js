@@ -40,6 +40,7 @@ res.json(healthPayload());
 // ===== MAIN AI ENDPOINT =====
 app.post('/api/ai/lead-intent', async (req, res) => {
 const text = req.body.text || '';
+console.log('[AI] /api/ai/lead-intent HIT:', new Date().toISOString(), 'text =', text);
 
 // כרגע מחזירים תשובה דמו כדי לוודא שהכל עובד
 res.json({
