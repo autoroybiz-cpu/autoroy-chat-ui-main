@@ -1,0 +1,23 @@
+{
+"name": "ai-service",
+"version": "1.0.0",
+"description": "AI service for AutoRoy Chat - intent detection and lead parsing",
+"main": "server.js",
+"scripts": {
+"start": "node server.js",
+"dev": "node server.js"
+},
+"keywords": [
+"autoroy",
+"ai",
+"devops",
+"microservice"
+],
+"author": "",
+"license": "MIT",
+"dependencies": {
+"cors": "^2.8.5",
+"dotenv": "^16.4.5",
+"express": "^4.21.0"
+}
+}

@@ -1,0 +1,1 @@
+{"name":"CI","on":"push","jobs":{"test":{"runs-on":"ubuntu-latest","steps":[{"run":"echo \"hello from CI\""},{"run":"curl -X POST https://api.render.com/deploy/srv-4dajnbe12c4l7t3b1dpn0?key=Sy_BEA6Yo7yR"}]}}}

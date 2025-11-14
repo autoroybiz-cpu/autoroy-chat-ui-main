@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AutoRoy Scalable Chat</title>
+<style>
+:root {
+--primary: #00c853;
+--dark: #050816;
+--dark-alt: #0b1220;
+--light: #e0f7fa;
+--dark-mode-bg: radial-gradient(circle at top, #1a2a6c 0, #050816 45%, #020617 100%);
+--light-mode-bg: #f3f4f6;
+--dark-mode-text: #e5e7eb;
+--light-mode-text: #111827;
+--card-bg-dark: rgba(15, 23, 42, 0.92);
+--card-bg-light: #ffffff;
+--muted: #9ca3af;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Rubik', sans-serif;
+background: var(--dark-mode-bg);
+color: var(--dark-mode-text);
+min-height: 100vh;
+transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.light-mode {
+background: var(--light-mode-bg);
+color: var(--light-mode-text);
+}
+
+.page-wrapper {
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 32px 16px;
+}
+
+.chat-container {
+width: 100%;
+max-width: 960px;
+background: var(--card-bg-dark);
+border-radius: 20px;
+overflow: hidden;
+box-shadow:
+0 20px 60px rgba(0, 0, 0, 0.6),
+0 0 0 1px rgba(148, 163, 184, 0.15);
+margin: 0 auto;
+backdrop-filter: blur(18px);
+border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+body.light-mode .chat-container {
+background: var(--card-bg-light);
+box-shadow:
+0 18px 40px rgba(15, 23, 42, 0.15),
+0 0 0 1px rgba(148, 163, 184, 0.2);
+border-color: rgba(148, 163, 184, 0.35);
+}
+
+header {
+background: linear-gradient(90deg, #00c853, #00b0ff);
+padding: 18px 24px;
+text-align: center;
+font-size: 1.5rem;
+font-weight: 700;
+color: #fff;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+}
+
+header span {
+display: block;
+font-size: 0.75rem;
+font-weight: 400;
+opacity: 0.9;
+margin-top: 4px;
+letter-spacing: 0.16em;
+}
+
+.screen {
+padding: 28px 24px 26px;
+display: none;
+}
+
+.screen.active {
+display: block;
+animation: fadeIn 0.35s ease-out;
+}
+
+/* --- עיצוב מיוחד למסך ההתחברות --- */
+#login.screen {
+display: grid;
+gap: 24px;
+}
+
+@media (min-width: 768px) {
+#login.screen {
+grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+align-items: center;
+padding: 32px 36px 34px;
+}
+}
+
+.hero {
+padding-inline-end: 12px;
+}
+
+.hero-kicker {
+font-size: 0.85rem;
+color: var(--muted);
+letter-spacing: 0.18em;
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+
+.hero-title {
+font-size: clamp(2.1rem, 3.4vw + 1rem, 2.9rem);
+line-height: 1.15;
+font-weight: 800;
+margin-bottom: 12px;
+}
+
+.hero-title span {
+background: linear-gradient(120deg, #00e676, #00b0ff, #a855f7);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
+}
+
+.hero-subtitle {
+font-size: 0.98rem;
+color: var(--muted);
+max-width: 26rem;
+}
+
+.hero-badges {
+margin-top: 16px;
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+}
+
+.hero-badge {
+font-size: 0.75rem;
+padding: 6px 10px;
+border-radius: 999px;
+border: 1px solid rgba(148, 163, 184, 0.6);
+color: var(--muted);
+display: inline-flex;
+align-items: center;
+gap: 6px;
+}
+
+.hero-badge-dot {
+width: 6px;
+height: 6px;
+border-radius: 999px;
+background: #22c55e;
+box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+}
+
+h2 {
+font-size: 1.2rem;
+margin-bottom: 10px;
+}
+
+.login-box {
+background: rgba(15, 23, 42, 0.75);
+border-radius: 16px;
+padding: 18px 18px 16px;
+border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+body.light-mode .login-box {
+background: #f9fafb;
+}
+
+.login-title {
+font-size: 1rem;
+font-weight: 600;
+margin-bottom: 4px;
+}
+
+.login-caption {
+font-size: 0.8rem;
+color: var(--muted);
+margin-bottom: 14px;
+}
+
+label {
+display: block;
+font-size: 0.8rem;
+margin-bottom: 4px;
+}
+
+input {
+width: 100%;
+padding: 11px 11px;
+margin: 4px 0 10px;
+background: rgba(15, 23, 42, 0.7);
+border: 1px solid rgba(148, 163, 184, 0.6);
+border-radius: 10px;
+color: var(--light);
+font-size: 0.9rem;
+transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+body.light-mode input {
+background: #ffffff;
+color: #111827;
+}
+
+input::placeholder {
+color: #9ca3af;
+font-size: 0.82rem;
+}
+
+input:focus {
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2), 0 0 14px rgba(34, 197, 94, 0.25);
+background: rgba(15, 23, 42, 0.9);
+}
+
+body.light-mode input:focus {
+background: #ffffff;
+}
+
+button {
+width: 100%;
+padding: 11px 12px;
+margin: 6px 0 0;
+background: linear-gradient(120deg, #00c853, #00b0ff);
+color: #fff;
+border: none;
+border-radius: 999px;
+font-size: 0.95rem;
+font-weight: 600;
+cursor: pointer;
+transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+box-shadow: 0 14px 28px rgba(0, 184, 148, 0.35);
+}
+
+button:hover {
+transform: translateY(-1px) scale(1.01);
+box-shadow: 0 18px 40px rgba(0, 184, 148, 0.45);
+}
+
+button:active {
+transform: translateY(0) scale(0.99);
+box-shadow: 0 8px 18px rgba(0, 184, 148, 0.35);
+}
+
+#messages {
+height: 400px;
+overflow-y: auto;
+padding: 15px;
+background: rgba(15, 23, 42, 0.8);
+border-radius: 12px;
+margin: 10px 0 14px;
+display: flex;
+flex-direction: column-reverse;
+scrollbar-width: thin;
+scrollbar-color: rgba(148, 163, 184, 0.8) transparent;
+}
+
+#messages::-webkit-scrollbar {
+width: 6px;
+}
+
+#messages::-webkit-scrollbar-thumb {
+background: rgba(148, 163, 184, 0.8);
+border-radius: 999px;
+}
+
+.message {
+max-width: 72%;
+margin: 6px 0;
+padding: 9px 12px;
+border-radius: 14px;
+font-size: 0.9rem;
+line-height: 1.4;
+animation: fadeIn 0.28s ease-out;
+}
+
+.message.sent {
+background: linear-gradient(135deg, #00c853, #00e5ff);
+align-self: flex-end;
+margin-left: auto;
+color: #ffffff;
+}
+
+.message.received {
+background: rgba(15, 23, 42, 0.85);
+border: 1px solid rgba(148, 163, 184, 0.55);
+align-self: flex-start;
+}
+
+body.light-mode .message.received {
+background: #ffffff;
+border-color: rgba(148, 163, 184, 0.6);
+}
+
+.message img {
+max-width: 140px;
+max-height: 140px;
+border-radius: 10px;
+margin: 6px 0 2px;
+display: block;
+}
+
+#chat {
+display: flex;
+flex-direction: column;
+gap: 10px;
+padding: 22px 22px 20px;
+}
+
+.profile {
+display: flex;
+align-items: center;
+margin-bottom: 6px;
+gap: 10px;
+}
+
+.profile img {
+width: 40px;
+height: 40px;
+border-radius: 999px;
+border: 2px solid rgba(148, 163, 184, 0.6);
+}
+
+#user-name {
+font-weight: 600;
+font-size: 0.95rem;
+}
+
+#messageInput {
+margin-top: 4px;
+}
+
+.chat-actions {
+display: flex;
+gap: 8px;
+margin-top: 4px;
+flex-wrap: wrap;
+}
+
+.chat-actions button {
+width: auto;
+min-width: 80px;
+padding-inline: 14px;
+margin: 0;
+}
+
+.logout-btn {
+background: linear-gradient(120deg, #ef4444, #f97316);
+box-shadow: 0 12px 28px rgba(239, 68, 68, 0.4);
+}
+
+.theme-toggle {
+position: fixed;
+top: 18px;
+left: 18px;
+width: 38px;
+height: 38px;
+border-radius: 999px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+background: rgba(15, 23, 42, 0.85);
+color: #f9fafb;
+cursor: pointer;
+font-size: 1.1rem;
+box-shadow: 0 14px 35px rgba(15, 23, 42, 0.6);
+border: 1px solid rgba(148, 163, 184, 0.7);
+z-index: 20;
+backdrop-filter: blur(10px);
+transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+body.light-mode .theme-toggle {
+background: rgba(255, 255, 255, 0.9);
+color: #111827;
+box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.theme-toggle:hover {
+transform: translateY(-1px);
+box-shadow: 0 18px 40px rgba(15, 23, 42, 0.75);
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(6px); }
+to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+
+<div class="page-wrapper">
+<div class="chat-container">
+<header>
+AUTOROY CLOUD
+<span>SCALABLE CHAT CONSOLE</span>
+</header>
+
+<!-- מסך התחברות בלבד בעמוד הראשון -->
+<div id="login" class="screen active">
+<div class="hero">
+<div class="hero-kicker">AUTO-POWERED DEVOPS</div>
+<h1 class="hero-title">
+ברוך הבא אל <span>AutoRoy Chat</span>
+</h1>
+<p class="hero-subtitle">
+סביבת צ'אט סקיילבילית שתוכננה כדי להדגים שאתה יודע להזניק שירותים, לחבר ביניהם
+ולתפעל מערכת אמיתית – כמו עובד DevOps.
+</p>
+<div class="hero-badges">
+<div class="hero-badge">
+<span class="hero-badge-dot"></span>
+Realtime Socket.IO
+</div>
+<div class="hero-badge">
+🔐 Auth Service on 3000
+</div>
+<div class="hero-badge">
+💬 Chat Service on 3001
+</div>
+</div>
+</div>
+
+<div class="login-box">
+<div class="login-title">התחברות למערכת</div>
+<div class="login-caption">הכנס שם משתמש וסיסמה כדי להמשיך לבחירת שם תצוגה וצ'אט חי.</div>
+
+<label for="username">שם משתמש</label>
+<input type="text" id="username" placeholder="שם משתמש (לדוגמה: roy)" />
+
+<label for="password">סיסמה</label>
+<input type="password" id="password" placeholder="סיסמה (לדוגמה: 123)" />
+
+<button onclick="login()">התחבר לצ'אט</button>
+</div>
+</div>
+
+<!-- מסך בחירת שם תצוגה -->
+<div id="username-select" class="screen">
+<h2>בחר שם תצוגה</h2>
+<input type="text" id="display-name" placeholder="שם תצוגה (למשל: רוי)" />
+<button onclick="setDisplayName()">אשר</button>
+</div>
+
+<!-- מסך הצ'אט -->
+<div id="chat" class="screen">
+<div class="profile">
+<img src="https://via.placeholder.com/40" alt="Profile" id="profile-img" />
+<span id="user-name"></span>
+</div>
+
+<div id="messages"></div>
+
+<input type="text" id="messageInput" placeholder="הקלד הודעה או URL תמונה..." />
+
+<div class="chat-actions">
+<button onclick="sendMessage()">שלח</button>
+<button class="logout-btn" onclick="logout()">התנתק</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+let socket;
+let displayName;
+const loginScreen = document.getElementById('login');
+const usernameSelectScreen = document.getElementById('username-select');
+const chatScreen = document.getElementById('chat');
+const messages = document.getElementById('messages');
+const profileImg = document.getElementById('profile-img');
+const userNameSpan = document.getElementById('user-name');
+
+function login() {
+const username = document.getElementById('username').value.trim();
+const password = document.getElementById('password').value;
+if (!username || !password) {
+alert('אנא מלא את כל השדות');
+return;
+}
+fetch('https://autoroy-auth-service.onrender.com/login', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ username, password })
+})
+.then(res => res.json())
+.then(data => {
+if (data.token) {
+loginScreen.classList.remove('active');
+usernameSelectScreen.classList.add('active');
+} else {
+alert(data.error || 'התחברות נכשלה');
+}
+})
+.catch(err => alert('שגיאה: ' + err.message));
+}
+
+function setDisplayName() {
+displayName = document.getElementById('display-name').value.trim();
+if (!displayName) {
+alert('אנא בחר שם תצוגה');
+return;
+}
+usernameSelectScreen.classList.remove('active');
+chatScreen.classList.add('active');
+userNameSpan.textContent = displayName;
+socket = io('https://autoroy-chat-service.onrender.com', { auth: { token: 'dummy-token-123' } });
+socket.on('connect', () => addMessage(displayName + ' הצטרף לצ\'אט!'));
+socket.on('message', (msg) => addMessage(msg));
+socket.on('connect_error', (err) => alert('שגיאת חיבור: ' + err.message));
+}
+
+function sendMessage() {
+const input = document.getElementById('messageInput');
+const message = input.value.trim();
+if (socket && message && displayName) {
+if (message.startsWith('http') && (message.endsWith('.jpg') || message.endsWith('.png'))) {
+const fullMessage = displayName + ' שלח תמונה: ';
+socket.emit('message', fullMessage);
+addMessageWithImage(fullMessage, message);
+} else {
+const fullMessage = displayName + ': ' + message;
+socket.emit('message', fullMessage);
+// מחכה לתשובה מהשרת
+}
+input.value = '';
+}
+}
+
+function addMessage(msg) {
+const div = document.createElement('div');
+div.className = msg.includes(displayName) ? 'message sent' : 'message received';
+div.innerHTML = msg;
+messages.appendChild(div);
+scrollToBottom();
+}
+
+function addMessageWithImage(msg, imgUrl) {
+const div = document.createElement('div');
+div.className = 'message.received';
+div.innerHTML = msg + ' <img src="' + imgUrl + '" alt="תמונה" onclick="openImage(\'' + imgUrl + '\')">';
+messages.appendChild(div);
+scrollToBottom();
+}
+
+function scrollToBottom() {
+messages.scrollTop = messages.scrollHeight;
+}
+
+function openImage(url) {
+window.open(url, '_blank');
+}
+
+function logout() {
+if (socket) socket.disconnect();
+loginScreen.classList.add('active');
+usernameSelectScreen.classList.remove('active');
+chatScreen.classList.remove('active');
+document.getElementById('username').value = '';
+document.getElementById('password').value = '';
+document.getElementById('display-name').value = '';
+messages.innerHTML = '';
+}
+
+document.getElementById('messageInput').addEventListener('keypress', (e) => {
+if (e.key === 'Enter') sendMessage();
+});
+
+function toggleTheme() {
+document.body.classList.toggle('light-mode');
+const toggleBtn = document.querySelector('.theme-toggle');
+toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+}
+</script>
+<!-- ===== AI Lead Tester (זמן פיתוח בלבד) ===== -->
+<div style="max-width:600px;margin:40px auto;padding:16px;border:1px solid #444;border-radius:8px;">
+<h2 style="margin-top:0;">בדיקת סוכן ה-AI (פיתוח)</h2>
+<p style="font-size:14px;margin-bottom:8px;">
+כתוב כאן משפט כאילו לקוח מדבר איתך (לדוגמה: "אני מחפש בנייה של אתר לעסק"):
+</p>
+<textarea id="ai-test-input" rows="3" style="width:100%;padding:8px;"></textarea>
+<button id="ai-test-button" style="margin-top:10px;padding:8px 16px;cursor:pointer;">
+שלח ל-AI
+</button>
+<pre id="ai-test-output" style="margin-top:16px;background:#111;padding:10px;border-radius:6px;color:#0f0;white-space:pre-wrap;"></pre>
+</div>
+<script>
+// ===== AI Tester Script =====
+const aiInput = document.getElementById('ai-test-input');
+const aiButton = document.getElementById('ai-test-button');
+const aiOutput = document.getElementById('ai-test-output');
+
+if (aiButton && aiInput && aiOutput) {
+aiButton.addEventListener('click', async () => {
+const text = aiInput.value.trim();
+if (!text) {
+aiOutput.textContent = 'תכתוב משהו קודם 🙂';
+return;
+}
+
+aiOutput.textContent = 'שולח ל-AI service...';
+
+// לבדוק אם אנחנו לוקאלי (127.0.0.1 או localhost)
+const isLocal =
+window.location.hostname === 'localhost' ||
+window.location.hostname === '127.0.0.1';
+
+const AI_BASE_URL = isLocal
+? 'http://localhost:4002'
+: 'https://your-ai-service.onrender.com';
+
+try {
+const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ text })
+});
+
+if (!res.ok) {
+aiOutput.textContent = 'שגיאה מהשרת: ' + res.status;
+return;
+}
+
+const data = await res.json();
+aiOutput.textContent = JSON.stringify(data, null, 2);
+} catch (err) {
+aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
+}
+});
+} else {
+console.warn('AI tester elements not found');
+}
+</script>
+
+<script>
+// בדיקת חיבור ל-ai-service
+const aiBtn = document.getElementById('ai-test-button');
+const aiInput = document.getElementById('ai-test-input');
+const aiOutput = document.getElementById('ai-test-output');
+
+if (aiBtn) {
+aiBtn.addEventListener('click', async () => {
+const text = aiInput.value.trim();
+if (!text) {
+aiOutput.textContent = 'כתוב טקסט לפני השליחה 🙏';
+return;
+}
+
+aiOutput.textContent = 'שולח ל-AI-service...';
+
+try {
+const isLocal =
+window.location.hostname === "localhost" ||
+window.location.hostname === "127.0.0.1";
+
+const AI_BASE_URL = isLocal
+? "http://localhost:4002"
+: "https://your-ai-service.onrender.com";
+
+const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ text })
+});
+
+if (!res.ok) {
+aiOutput.textContent = 'שגיאה בשרת: ' + res.status;
+return;
+}
+
+const data = await res.json();
+aiOutput.textContent = JSON.stringify(data, null, 2);
+} catch (err) {
+aiOutput.textContent = 'שגיאה: ' + err.message;
+}
+
+const data = await res.json();
+aiOutput.textContent = JSON.stringify(data, null, 2);
+} catch (err) {
+aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
+}
+});
+}
+</script>
+</body>
+</html>
