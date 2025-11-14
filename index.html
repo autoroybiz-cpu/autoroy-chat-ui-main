@@ -505,7 +505,6 @@ method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ username, password })
 })
-
 .then(res => res.json())
 .then(data => {
 if (data.token) {
@@ -560,7 +559,7 @@ scrollToBottom();
 
 function addMessageWithImage(msg, imgUrl) {
 const div = document.createElement('div');
-div.className = 'message.received';
+div.className = 'message received';
 div.innerHTML = msg + ' <img src="' + imgUrl + '" alt="תמונה" onclick="openImage(\'' + imgUrl + '\')">';
 messages.appendChild(div);
 scrollToBottom();
@@ -594,8 +593,6 @@ document.body.classList.toggle('light-mode');
 const toggleBtn = document.querySelector('.theme-toggle');
 toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
 }
-<script>
-// ... (פונקציות קיימות כמו toggleTheme)
 
 // === AI Tester Script ===
 const aiInput = document.getElementById('ai-test-input');
@@ -603,36 +600,36 @@ const aiBtn = document.getElementById('ai-test-button');
 const aiOutput = document.getElementById('ai-test-output');
 
 if (aiBtn && aiInput && aiOutput) {
-  aiBtn.addEventListener('click', async () => {
-    const text = aiInput.value.trim();
-    if (!text) {
-      aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
-      return;
-    }
-    aiOutput.textContent = '...בודק את AI-service 🌐';
-    try {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const AI_BASE_URL = isLocal ? 'http://localhost:4002' : 'https://autoroy-chat-ai-main.onrender.com';
-      const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text })
-      });
-      if (!res.ok) {
-        aiOutput.textContent = 'שגיאה ב-fetch: ' + res.status;
-        return;
-      }
-      const data = await res.json();
-      aiOutput.textContent = JSON.stringify(data, null, 2);
-    } catch (err) {
-      aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
-    }
-  });
+aiBtn.addEventListener('click', async () => {
+const text = aiInput.value.trim();
+if (!text) {
+aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
+return;
+}
+aiOutput.textContent = '...בודק את AI-service 🌐';
+try {
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const AI_BASE_URL = isLocal ? 'http://localhost:4002' : 'https://autoroy-chat-ai-main.onrender.com';
+const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({ text })
+});
+if (!res.ok) {
+aiOutput.textContent = 'שגיאה ב-fetch: ' + res.status;
+return;
+}
+const data = await res.json();
+aiOutput.textContent = JSON.stringify(data, null, 2);
+} catch (err) {
+aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
+}
+});
 } else {
-  console.warn('AI tester elements not found');
+console.warn('AI tester elements not found');
 }
 </script>
 </body>
-<html 
+</html>
