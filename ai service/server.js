@@ -1,31 +1,37 @@
-import express from 'express';
-import cors from 'cors';
+// server.js – AI service (Render + Local)
 
+// ==== Imports ====
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+// ==== App setup ====
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// HEALTH CHECK
+// ==== Health check ====
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'ai-service',
-    timestamp: new Date().toISOString()
-  });
+res.json({
+status: 'ok',
+service: 'ai-service',
+timestamp: new Date().toISOString()
+});
 });
 
-// MAIN AI ENDPOINT
+// ==== MAIN AI ENDPOINT ====
 app.post('/api/ai/lead-intent', async (req, res) => {
-  const text = req.body.text || '';
-  // כאן אפשר לשים מודל שתבחר
-  res.json({
-    intent: "test",
-    received: text
-  });
+const text = req.body.text || '';
+
+res.json({
+intent: 'test',
+received: text
+});
 });
 
-// ⛔ אל תשנה את זה — Render קובע את הפורט!
+// ==== PORT (Render נותן אותו אוטומטית) ====
 const PORT = process.env.PORT || 4002;
+
 app.listen(PORT, () => {
-  console.log(`AI-service running on port ${PORT}`);
-  
+console.log(`AI-service running on port ${PORT}`);
+});
