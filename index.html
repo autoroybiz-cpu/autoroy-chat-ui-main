@@ -660,30 +660,43 @@ const aiBtn = document.getElementById('ai-test-button');
 const aiInput = document.getElementById('ai-test-input');
 const aiOutput = document.getElementById('ai-test-output');
 
-if (aiBtn) {
+<script>
 aiBtn.addEventListener('click', async () => {
-const text = aiInput.value.trim();
-if (!text) {
-aiOutput.textContent = 'כתוב טקסט לפני השליחה 🙏';
-return;
-}
-
-aiOutput.textContent = 'שולח ל-AI-service...';
+aiOutput.textContent = '...AI-service־? נבדק';
 
 try {
 const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
+window.location.hostname === 'localhost' ||
+window.location.hostname === '127.0.0.1';
 
 const AI_BASE_URL = isLocal
-  ? "http://localhost:4002"
-  : "https://autoroy-chat-ai-main.onrender.com";
+? 'http://localhost:4002'
+: 'https://autoroy-chat-ai-main.onrender.com';
+
+const text = aiInput.value.trim();
+if (!text) {
+aiOutput.textContent = 'הכנס טקסט קודם 🙂';
+return;
+}
 
 const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ text })
 });
+
+if (!res.ok) {
+aiOutput.textContent = 'שגיאה ב־fetch: ' + res.status;
+return;
+}
+
+const data = await res.json();
+aiOutput.textContent = JSON.stringify(data, null, 2);
+} catch (err) {
+aiOutput.textContent = 'שגיאה ב־fetch: ' + err.message;
+}
+});
+</script>
 
 if (!res.ok) {
 aiOutput.textContent = 'שגיאה בשרת: ' + res.status;
