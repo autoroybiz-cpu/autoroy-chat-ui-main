@@ -500,7 +500,7 @@ if (!username || !password) {
 alert('אנא מלא את כל השדות');
 return;
 }
-fetch('autoroy-chat-ai-main.onrender.com', {
+fetch('https://autoroy-chat-ai-main.onrender.com', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ username, password })
