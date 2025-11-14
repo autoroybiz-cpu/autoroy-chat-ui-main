@@ -662,7 +662,7 @@ const aiOutput = document.getElementById('ai-test-output');
 
 <script>
 aiBtn.addEventListener('click', async () => {
-aiOutput.textContent = '...AI-service־? נבדק';
+aiOutput.textContent = '...AI-service נבדק';
 
 try {
 const isLocal =
@@ -675,7 +675,7 @@ const AI_BASE_URL = isLocal
 
 const text = aiInput.value.trim();
 if (!text) {
-aiOutput.textContent = 'הכנס טקסט קודם 🙂';
+aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
 return;
 }
 
