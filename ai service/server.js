@@ -27,5 +27,5 @@ app.post('/api/ai/lead-intent', async (req, res) => {
 // ⛔ אל תשנה את זה — Render קובע את הפורט!
 const PORT = process.env.PORT || 4002;
 app.listen(PORT, () => {
-  console.log(AI-service running on port ${PORT});
-});
+  console.log(`AI-service running on port ${PORT}`);
+  
