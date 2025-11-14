@@ -1,37 +1,54 @@
-// server.js – AI service (Render + Local)
+// server.js - AI service (Render + Local)
 
-// ==== Imports ====
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// ==== App setup ====
 const app = express();
-app.use(express.json());
-app.use(cors());
+const PORT = process.env.PORT || 4002;
 
-// ==== Health check ====
-app.get('/health', (req, res) => {
-res.json({
+// ===== CORS פתוח לכל המקורות (UI ברנדר, לוקאלי וכו') =====
+const corsOptions = {
+origin: '*',
+methods: ['GET', 'POST', 'OPTIONS'],
+allowedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// ===== JSON body =====
+app.use(express.json());
+
+// ===== Health check =====
+function healthPayload() {
+return {
 status: 'ok',
 service: 'ai-service',
-timestamp: new Date().toISOString()
-});
+timestamp: new Date().toISOString(),
+};
+}
+
+app.get('/', (req, res) => {
+res.json(healthPayload());
 });
 
-// ==== MAIN AI ENDPOINT ====
+app.get('/health', (req, res) => {
+res.json(healthPayload());
+});
+
+// ===== MAIN AI ENDPOINT =====
 app.post('/api/ai/lead-intent', async (req, res) => {
 const text = req.body.text || '';
 
+// כרגע מחזירים תשובה דמו כדי לוודא שהכל עובד
 res.json({
 intent: 'test',
-received: text
+received: text,
 });
 });
 
-// ==== PORT (Render נותן אותו אוטומטית) ====
-const PORT = process.env.PORT || 4002;
-
+// ===== Start server =====
 app.listen(PORT, () => {
 console.log(`AI-service running on port ${PORT}`);
 });
