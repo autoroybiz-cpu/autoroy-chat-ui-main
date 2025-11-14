@@ -500,11 +500,12 @@ if (!username || !password) {
 alert('אנא מלא את כל השדות');
 return;
 }
-fetch('https://autoroy-chat-ai-main.onrender.com/api/ai/lead-instent', {
+fetch('https://autoroy-chat-ai-main.onrender.com/api/ai/lead-intent', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ username, password })
 })
+
 .then(res => res.json())
 .then(data => {
 if (data.token) {
