@@ -80,7 +80,7 @@ Node.js + Socket.IO service running a real-time chat room
 
 ⬜ Support for multiple chat rooms
 
-⬜ Full CI/CD pipeline (GitHub Actions → Render)
+✅ Full CI/CD pipeline (GitHub Actions → Render)
 
 ⬜ Automated testing (unit + integration)
 
