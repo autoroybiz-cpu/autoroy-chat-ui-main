@@ -522,149 +522,185 @@ const userNameSpan = document.getElementById('user-name');
 
 // ===== התחברות (בינתיים בלי שרת Auth אמיתי, רק מעבר מסך) =====
 function login() {
-const username = document.getElementById('username').value.trim();
-const password = document.getElementById('password').value;
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
 
-if (!username || !password) {
-alert('אנא מלא את כל השדות');
-return;
-}
+  if (!username || !password) {
+    alert('אנא מלא את כל השדות');
+    return;
+  }
 
-// כרגע: כל שם+סיסמה עוברים הלאה למסך בחירת שם תצוגה
-loginScreen.classList.remove('active');
-usernameSelectScreen.classList.add('active');
+  // כרגע: כל שם+סיסמה עוברים הלאה למסך בחירת שם תצוגה
+  loginScreen.classList.remove('active');
+  usernameSelectScreen.classList.add('active');
 }
 
 // ===== בחירת שם תצוגה וחיבור לצ'אט =====
 function setDisplayName() {
-displayName = document.getElementById('display-name').value.trim();
-if (!displayName) {
-alert('אנא בחר שם תצוגה');
-return;
-}
+  displayName = document.getElementById('display-name').value.trim();
+  if (!displayName) {
+    alert('אנא בחר שם תצוגה');
+    return;
+  }
 
-usernameSelectScreen.classList.remove('active');
-chatScreen.classList.add('active');
-userNameSpan.textContent = displayName;
+  usernameSelectScreen.classList.remove('active');
+  chatScreen.classList.add('active');
+  userNameSpan.textContent = displayName;
 
-// כאן החיבור לשרת הצ'אט (socket.io)
-// זה ה-CHAT SERVICE שלך, לא ה-UI ולא ה-AI
-socket = io('https://autoroy-chat-service.onrender.com', {
-auth: { token: 'dummy-token-123' }
-});
+  // כאן החיבור לשרת הצ'אט (socket.io) - עם retry
+  const CHAT_SERVICE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:4001'  // שנה לפי הפורט שלך ב-local
+    : 'https://autoroy-chat-service.onrender.com';
 
-socket.on('connect', () => addMessage(displayName + ' הצטרף לצ\'אט!'));
-socket.on('message', (msg) => addMessage(msg));
-socket.on('connect_error', (err) => alert('שגיאת חיבור: ' + err.message));
+  try {
+    socket = io(CHAT_SERVICE_URL, {
+      auth: { token: 'dummy-token-123' },
+      timeout: 10000,  // 10 שניות timeout
+      reconnection: true,
+      reconnectionAttempts: 3
+    });
+
+    socket.on('connect', () => {
+      console.log('מחובר ל-Chat Service');
+      addMessage(displayName + ' הצטרף לצ\'אט!');
+    });
+
+    socket.on('message', (msg) => addMessage(msg));
+
+    socket.on('connect_error', (err) => {
+      console.error('שגיאת חיבור Chat:', err);
+      alert('שגיאת חיבור ל-Chat Service: ' + err.message + '. בדוק אם השירות פעיל ב-Render.');
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('ניתוק מ-Chat:', reason);
+      if (reason === 'io server disconnect') {
+        addMessage('השרת נפל - מנסה להתחבר מחדש...');
+      }
+    });
+  } catch (err) {
+    console.error('שגיאה בייזום Socket:', err);
+    alert('לא ניתן להתחבר ל-Chat Service. בדוק את הקישור: ' + CHAT_SERVICE_URL);
+  }
 }
 
 // ===== שליחת הודעה =====
 function sendMessage() {
-const input = document.getElementById('messageInput');
-const message = input.value.trim();
+  const input = document.getElementById('messageInput');
+  const message = input.value.trim();
 
-if (socket && message && displayName) {
-if (message.startsWith('http') &&
-(message.endsWith('.jpg') || message.endsWith('.png'))) {
-const fullMessage = displayName + ' שלח תמונה: ';
-socket.emit('message', fullMessage);
-addMessageWithImage(fullMessage, message);
-} else {
-const fullMessage = displayName + ': ' + message;
-socket.emit('message', fullMessage);
-}
-input.value = '';
-}
+  if (!message || !displayName) {
+    alert('הקלד הודעה');
+    return;
+  }
+
+  if (socket && socket.connected) {
+    const fullMessage = displayName + ': ' + message;
+    socket.emit('message', fullMessage);
+    addMessage(fullMessage);  // הוסף מיד (optimistic UI)
+  } else {
+    addMessage('שגיאה: לא מחובר לשרת צ\'אט. נסה להתחבר מחדש.');
+  }
+  input.value = '';
 }
 
 function addMessage(msg) {
-const div = document.createElement('div');
-div.className = msg.includes(displayName) ? 'message sent' : 'message received';
-div.innerHTML = msg;
-messages.appendChild(div);
-scrollToBottom();
+  const div = document.createElement('div');
+  div.className = msg.includes(displayName + ':') ? 'message sent' : 'message received';
+  div.innerHTML = msg.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');  // קישורים אוטומטיים
+  messages.appendChild(div);
+  scrollToBottom();
 }
 
 function addMessageWithImage(msg, imgUrl) {
-const div = document.createElement('div');
-div.className = 'message received';
-div.innerHTML = msg + ' <img src="' + imgUrl + '" alt="תמונה" onclick="openImage(\'' + imgUrl + '\')">';
-messages.appendChild(div);
-scrollToBottom();
+  const div = document.createElement('div');
+  div.className = 'message sent';
+  div.innerHTML = msg + ' <img src="' + imgUrl + '" alt="תמונה" onclick="openImage(\'' + imgUrl + '\')" style="cursor: pointer;">';
+  messages.appendChild(div);
+  scrollToBottom();
 }
 
 function scrollToBottom() {
-messages.scrollTop = messages.scrollHeight;
+  messages.scrollTop = messages.scrollHeight;
 }
 
 function openImage(url) {
-window.open(url, '_blank');
+  window.open(url, '_blank');
 }
 
 function logout() {
-if (socket) socket.disconnect();
-loginScreen.classList.add('active');
-usernameSelectScreen.classList.remove('active');
-chatScreen.classList.remove('active');
-document.getElementById('username').value = '';
-document.getElementById('password').value = '';
-document.getElementById('display-name').value = '';
-messages.innerHTML = '';
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+  loginScreen.classList.add('active');
+  usernameSelectScreen.classList.remove('active');
+  chatScreen.classList.remove('active');
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  document.getElementById('display-name').value = '';
+  messages.innerHTML = '';
+  displayName = null;
 }
 
 document.getElementById('messageInput').addEventListener('keypress', (e) => {
-if (e.key === 'Enter') sendMessage();
+  if (e.key === 'Enter') sendMessage();
 });
 
 // ===== Dark / Light =====
 function toggleTheme() {
-document.body.classList.toggle('light-mode');
-const toggleBtn = document.querySelector('.theme-toggle');
-toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+  document.body.classList.toggle('light-mode');
+  const toggleBtn = document.querySelector('.theme-toggle');
+  toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
 }
 
-// ===== AI Tester =====
+// ===== AI Tester - עם retry ו-error handling =====
 const aiInput = document.getElementById('ai-test-input');
 const aiBtn = document.getElementById('ai-test-button');
 const aiOutput = document.getElementById('ai-test-output');
 
 if (aiBtn && aiInput && aiOutput) {
-aiBtn.addEventListener('click', async () => {
-const text = aiInput.value.trim();
-if (!text) {
-aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
-return;
-}
-aiOutput.textContent = '...בודק את AI-service 🌐';
+  aiBtn.addEventListener('click', async () => {
+    const text = aiInput.value.trim();
+    if (!text) {
+      aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
+      return;
+    }
+    aiOutput.textContent = 'מחבר ל-AI Service... ⏳';
 
-try {
-const isLocal = window.location.hostname === 'localhost' ||
-window.location.hostname === '127.0.0.1';
-const AI_BASE_URL = isLocal
-? 'http://localhost:4002'
-: 'https://autoroy-chat-ai-main.onrender.com';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const AI_BASE_URL = isLocal ? 'http://localhost:4002' : 'https://autoroy-chat-ai-main.onrender.com';  // שנה אם צריך
 
-const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-},
-body: JSON.stringify({ text })
-});
+    try {
+      const controller = new AbortController();  // ל-timeout
+      setTimeout(() => controller.abort(), 15000);  // 15 שניות
 
-if (!res.ok) {
-aiOutput.textContent = 'שגיאה ב-fetch: ' + res.status;
-return;
-}
+      const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+        signal: controller.signal
+      });
 
-const data = await res.json();
-aiOutput.textContent = JSON.stringify(data, null, 2);
-} catch (err) {
-aiOutput.textContent = 'שגיאה ב-fetch: ' + err.message;
-}
-});
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      aiOutput.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      console.error('שגיאה ב-AI fetch:', err);
+      let errorMsg = err.name === 'AbortError' ? 'Timeout - AI איטי מדי' : err.message;
+      if (errorMsg.includes('ERR_NAME_NOT_RESOLVED') || errorMsg.includes('Failed to fetch')) {
+        errorMsg += '\n💡 בדוק: 1. השירות פעיל ב-Render? 2. "הערה" את השירות. 3. CORS מוגדר?';
+      }
+      aiOutput.textContent = `שגיאה: ${errorMsg}\n\nנסה שוב בעוד רגע...`;
+    }
+  });
 } else {
-console.warn('AI tester elements not found');
+  console.warn('AI tester elements not found');
 }
 </script>
 </body>
