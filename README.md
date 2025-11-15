@@ -91,7 +91,7 @@ Node.js + Socket.IO service running a real-time chat room
 This project was built as part of my journey into **DevOps, Cloud Engineering, and Production-grade architecture**.
 
 **Goal:**
-Create a practical, interview-ready portfolio project that demonstrates:
+Create a practical portfolio project that demonstrates:
 - Microservice design
 - Real cloud deployments
 - Debugging & production troubleshooting
