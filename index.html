@@ -98,7 +98,7 @@ display: block;
 animation: fadeIn 0.35s ease-out;
 }
 
-/* --- עיצוב מיוחד למסך ההתחברות --- */
+/* --- מסך התחברות --- */
 #login.screen {
 display: grid;
 gap: 24px;
@@ -180,6 +180,7 @@ background: rgba(15, 23, 42, 0.75);
 border-radius: 16px;
 padding: 18px 18px 16px;
 border: 1px solid rgba(148, 163, 184, 0.5);
+margin-bottom: 16px;
 }
 
 body.light-mode .login-box {
@@ -401,6 +402,22 @@ transform: translateY(-1px);
 box-shadow: 0 18px 40px rgba(15, 23, 42, 0.75);
 }
 
+#ai-test-output {
+margin-top: 8px;
+padding: 8px 10px;
+background: rgba(15, 23, 42, 0.85);
+border-radius: 10px;
+font-size: 0.8rem;
+white-space: pre-wrap;
+direction: ltr;
+color: #e5e7eb;
+}
+
+body.light-mode #ai-test-output {
+background: #ffffff;
+color: #111827;
+}
+
 @keyframes fadeIn {
 from { opacity: 0; transform: translateY(6px); }
 to { opacity: 1; transform: translateY(0); }
@@ -433,18 +450,16 @@ AUTOROY CLOUD
 <span class="hero-badge-dot"></span>
 Realtime Socket.IO
 </div>
-<div class="hero-badge">
-🔐 Auth Service on 3000
-</div>
-<div class="hero-badge">
-💬 Chat Service on 3001
-</div>
+<div class="hero-badge">🔐 Auth Service</div>
+<div class="hero-badge">💬 Chat Service</div>
 </div>
 </div>
 
 <div class="login-box">
 <div class="login-title">התחברות למערכת</div>
-<div class="login-caption">הכנס שם משתמש וסיסמה כדי להמשיך לבחירת שם תצוגה וצ'אט חי.</div>
+<div class="login-caption">
+הכנס שם משתמש וסיסמה כדי להמשיך לבחירת שם תצוגה וצ'אט חי.
+</div>
 
 <label for="username">שם משתמש</label>
 <input type="text" id="username" placeholder="שם משתמש (לדוגמה: roy)" />
@@ -453,6 +468,17 @@ Realtime Socket.IO
 <input type="password" id="password" placeholder="סיסמה (לדוגמה: 123)" />
 
 <button onclick="login()">התחבר לצ'אט</button>
+</div>
+
+<!-- כרטיס בדיקת AI -->
+<div class="login-box">
+<div class="login-title">בדיקת סוכן ה-AI (פיתוח)</div>
+<div class="login-caption">
+כתוב כאן משפט כאילו לקוח מדבר איתך (לדוגמה: "אני מחפש בנייה של אתר לעסק").
+</div>
+<input type="text" id="ai-test-input" placeholder="טקסט לבדיקה..." />
+<button id="ai-test-button">שלח ל-AI</button>
+<pre id="ai-test-output"></pre>
 </div>
 </div>
 
@@ -484,59 +510,62 @@ Realtime Socket.IO
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+// ===== בסיס =====
 let socket;
 let displayName;
+
 const loginScreen = document.getElementById('login');
 const usernameSelectScreen = document.getElementById('username-select');
 const chatScreen = document.getElementById('chat');
 const messages = document.getElementById('messages');
-const profileImg = document.getElementById('profile-img');
 const userNameSpan = document.getElementById('user-name');
 
+// ===== התחברות (בינתיים בלי שרת Auth אמיתי, רק מעבר מסך) =====
 function login() {
 const username = document.getElementById('username').value.trim();
 const password = document.getElementById('password').value;
+
 if (!username || !password) {
 alert('אנא מלא את כל השדות');
 return;
 }
-fetch('https://autoroy-chat-ai-main.onrender.com/api/ai/lead-intent', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ username, password })
-})
-.then(res => res.json())
-.then(data => {
-if (data.token) {
+
+// כרגע: כל שם+סיסמה עוברים הלאה למסך בחירת שם תצוגה
 loginScreen.classList.remove('active');
 usernameSelectScreen.classList.add('active');
-} else {
-alert(data.error || 'התחברות נכשלה');
-}
-})
-.catch(err => alert('שגיאה: ' + err.message));
 }
 
+// ===== בחירת שם תצוגה וחיבור לצ'אט =====
 function setDisplayName() {
 displayName = document.getElementById('display-name').value.trim();
 if (!displayName) {
 alert('אנא בחר שם תצוגה');
 return;
 }
+
 usernameSelectScreen.classList.remove('active');
 chatScreen.classList.add('active');
 userNameSpan.textContent = displayName;
-socket = io('https://autoroy-chat-main.onrender.com', { auth: { token: 'dummy-token-123' } });
+
+// כאן החיבור לשרת הצ'אט (socket.io)
+// זה ה-CHAT SERVICE שלך, לא ה-UI ולא ה-AI
+socket = io('https://autoroy-chat-service.onrender.com', {
+auth: { token: 'dummy-token-123' }
+});
+
 socket.on('connect', () => addMessage(displayName + ' הצטרף לצ\'אט!'));
 socket.on('message', (msg) => addMessage(msg));
 socket.on('connect_error', (err) => alert('שגיאת חיבור: ' + err.message));
 }
 
+// ===== שליחת הודעה =====
 function sendMessage() {
 const input = document.getElementById('messageInput');
 const message = input.value.trim();
+
 if (socket && message && displayName) {
-if (message.startsWith('http') && (message.endsWith('.jpg') || message.endsWith('.png'))) {
+if (message.startsWith('http') &&
+(message.endsWith('.jpg') || message.endsWith('.png'))) {
 const fullMessage = displayName + ' שלח תמונה: ';
 socket.emit('message', fullMessage);
 addMessageWithImage(fullMessage, message);
@@ -587,13 +616,14 @@ document.getElementById('messageInput').addEventListener('keypress', (e) => {
 if (e.key === 'Enter') sendMessage();
 });
 
+// ===== Dark / Light =====
 function toggleTheme() {
 document.body.classList.toggle('light-mode');
 const toggleBtn = document.querySelector('.theme-toggle');
 toggleBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
 }
 
-// === AI Tester Script ===
+// ===== AI Tester =====
 const aiInput = document.getElementById('ai-test-input');
 const aiBtn = document.getElementById('ai-test-button');
 const aiOutput = document.getElementById('ai-test-output');
@@ -606,9 +636,14 @@ aiOutput.textContent = '✍️ כתוב טקסט לפני שליחה';
 return;
 }
 aiOutput.textContent = '...בודק את AI-service 🌐';
+
 try {
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const AI_BASE_URL = isLocal ? 'http://localhost:4002' : 'https://autoroy-chat-ai-main.onrender.com';
+const isLocal = window.location.hostname === 'localhost' ||
+window.location.hostname === '127.0.0.1';
+const AI_BASE_URL = isLocal
+? 'http://localhost:4002'
+: 'https://autoroy-chat-ai-main.onrender.com';
+
 const res = await fetch(`${AI_BASE_URL}/api/ai/lead-intent`, {
 method: 'POST',
 headers: {
@@ -616,10 +651,12 @@ headers: {
 },
 body: JSON.stringify({ text })
 });
+
 if (!res.ok) {
 aiOutput.textContent = 'שגיאה ב-fetch: ' + res.status;
 return;
 }
+
 const data = await res.json();
 aiOutput.textContent = JSON.stringify(data, null, 2);
 } catch (err) {
