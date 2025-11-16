@@ -1,4 +1,4 @@
-# **AutoRoy Scalable Chat 🚀**
+# **AutoRoy Chat 🚀**
 ![CI](https://github.com/autoroybiz-cpu/autoroy-chat-ui/actions/workflows/ci.yml/badge.svg)
 
 A full DevOps × Cloud × Microservices demonstration project.
